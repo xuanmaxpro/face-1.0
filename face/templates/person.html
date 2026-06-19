@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人员管理 - FaceRec</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- 顶栏 -->
+        <header class="topbar">
+            <div class="topbar-brand">
+                <a href="/" class="topbar-brand" style="text-decoration:none">
+                    <span class="logo-mark"></span>
+                    <h1>FaceRec</h1>
+                </a>
+            </div>
+            <div class="topbar-stats">
+                <div class="stat-chip">
+                    <span class="stat-label">已录入</span>
+                    <strong id="personCount">0</strong>
+                    <span class="stat-unit">人</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主内容 -->
+        <main class="main person-page">
+            <!-- 页面标题区 -->
+            <div class="page-header">
+                <div class="page-header-left">
+                    <h2>人员管理</h2>
+                    <p class="page-desc">录入、查看和删除已注册的人脸数据</p>
+                </div>
+                <button class="btn btn-accent" onclick="openEnrollModal()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    录入人员
+                </button>
+            </div>
+
+            <!-- 人员列表 -->
+            <div class="person-grid" id="personGrid">
+                <div class="empty-state" style="grid-column: 1 / -1; min-height: 300px;">加载中...</div>
+            </div>
+        </main>
+
+        <!-- 录入弹窗 -->
+        <div id="enrollModal" class="modal" hidden>
+            <div class="modal-backdrop" onclick="closeEnrollModal()"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>录入人员</h3>
+                    <button class="btn btn-icon" onclick="closeEnrollModal()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="field">
+                        <label class="field-label">姓名</label>
+                        <input type="text" id="enrollName" placeholder="请输入姓名" class="input">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">选择图片（可多选）</label>
+                        <div class="file-drop-zone" id="fileDropZone">
+                            <input type="file" id="enrollImages" multiple accept="image/*" hidden>
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <p>拖拽图片到此处，或点击选择</p>
+                            <button type="button" class="btn btn-ghost" onclick="document.getElementById('enrollImages').click()">选择文件</button>
+                        </div>
+                        <div id="enrollPreview" class="enroll-thumbs" style="margin-top: 12px;"></div>
+                    </div>
+                </div>
+                <div class="modal-footer-bar">
+                    <button class="btn btn-ghost" onclick="closeEnrollModal()">取消</button>
+                    <button class="btn btn-accent" onclick="submitEnroll()" id="enrollSubmitBtn">确认录入</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast 容器 -->
+        <div id="toastContainer" class="toast-container"></div>
+    </div>
+
+    <script src="/static/js/person.js"></script>
+</body>
+</html>

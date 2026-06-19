@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FaceRec - 人脸识别系统</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- 顶栏 -->
+        <header class="topbar">
+            <div class="topbar-brand">
+                <span class="logo-mark"></span>
+                <h1>FaceRec</h1>
+            </div>
+            <div class="topbar-stats">
+                <div class="stat-chip">
+                    <span class="stat-label">已录入</span>
+                    <strong id="personCount">0</strong>
+                    <span class="stat-unit">人</span>
+                </div>
+                <div class="stat-chip">
+                    <span class="stat-label">识别</span>
+                    <strong id="recordCount">0</strong>
+                    <span class="stat-unit">次</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主内容 -->
+        <main class="main">
+            <!-- 左侧：识别工作区 -->
+            <section class="workspace">
+                <!-- Tab 导航 -->
+                <nav class="workspace-tabs" role="tablist">
+                    <button class="workspace-tab active" data-tab="realtime" role="tab" aria-selected="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                        实时识别
+                    </button>
+                    <button class="workspace-tab" data-tab="upload" role="tab" aria-selected="false">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        上传识别
+                    </button>
+                    <a class="workspace-tab" href="/person" role="tab">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                        人员管理
+                    </a>
+                    <a class="workspace-tab" href="/features" role="tab">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        特征介绍
+                    </a>
+                </nav>
+
+                <!-- 实时识别 -->
+                <div id="realtime" class="tab-pane active" role="tabpanel">
+                    <div class="workspace-grid">
+                        <div class="viewport-card">
+                            <div class="viewport">
+                                <video id="videoElement" autoplay playsinline></video>
+                                <canvas id="videoCanvas"></canvas>
+                                <div class="viewport-empty" id="videoPlaceholder">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                                    <p>点击下方按钮开启摄像头</p>
+                                </div>
+                            </div>
+                            <div class="viewport-toolbar">
+                                <button id="startCameraBtn" class="btn btn-accent">开启摄像头</button>
+                                <button id="stopCameraBtn" class="btn btn-ghost" disabled>关闭</button>
+                                <span id="cameraStatus" class="status-dot"></span>
+                            </div>
+                        </div>
+                        <div class="results-card">
+                            <div class="card-header">
+                                <h3>识别结果</h3>
+                            </div>
+                            <div id="realtimeResults" class="results-body">
+                                <div class="empty-state">等待识别</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 上传识别 -->
+                <div id="upload" class="tab-pane" role="tabpanel">
+                    <div class="workspace-grid">
+                        <div class="viewport-card">
+                            <div class="upload-zone" id="uploadArea">
+                                <input type="file" id="imageInput" accept="image/*" hidden>
+                                <div class="upload-empty" id="uploadPlaceholder">
+                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                    <p>拖拽图片到此处，或点击选择</p>
+                                    <button type="button" class="btn btn-ghost" onclick="document.getElementById('imageInput').click()">选择文件</button>
+                                </div>
+                                <div class="preview-area" id="previewArea" hidden>
+                                    <canvas id="previewCanvas"></canvas>
+                                </div>
+                            </div>
+                            <div class="viewport-toolbar">
+                                <button id="recognizeBtn" class="btn btn-accent" disabled>开始识别</button>
+                                <button type="button" class="btn btn-ghost" onclick="clearUpload()">清除</button>
+                            </div>
+                        </div>
+                        <div class="results-card">
+                            <div class="card-header">
+                                <h3>识别结果</h3>
+                            </div>
+                            <div id="uploadResults" class="results-body">
+                                <div class="empty-state">上传图片开始识别</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 右侧：控制面板 -->
+            <aside class="sidebar">
+                <!-- 识别设置 -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>识别设置</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="field">
+                            <label class="field-label">识别模式</label>
+                            <div class="toggle-group">
+                                <label class="toggle-option">
+                                    <input type="radio" name="mode" value="identification" checked>
+                                    <span class="toggle-btn">辨认 1:N</span>
+                                </label>
+                                <label class="toggle-option">
+                                    <input type="radio" name="mode" value="verification">
+                                    <span class="toggle-btn">确认 1:1</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="field" id="targetSelectPanel">
+                            <label class="field-label">目标人员</label>
+                            <select id="targetSelect" disabled class="select">
+                                <option value="">-- 请选择 --</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">相似度阈值 <output id="thresholdValue">0.60</output></label>
+                            <input type="range" id="thresholdSlider" min="0.3" max="0.9" step="0.05" value="0.6" class="range">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">特征提取</label>
+                            <select id="featureSelect" class="select">
+                                <option value="resnet">ResNet (128d)</option>
+                                <option value="hog">HOG (1764d)</option>
+                                <option value="pixel">Pixel Stats (20d)</option>
+                                <option value="transform">Transform (304d)</option>
+                                <option value="algebraic">Algebraic (50d)</option>
+                                <option value="ensemble">Ensemble (2138d)</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-ghost btn-block" onclick="showFeatureInfo()">查看特征详情</button>
+                    </div>
+                </div>
+
+<!-- 识别记录 -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>识别记录</h3>
+                        <div class="panel-header-actions">
+                            <button class="btn btn-icon" onclick="refreshRecords()" title="刷新">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                            </button>
+                            <button class="btn btn-icon btn-danger-icon" onclick="clearRecords()" title="清空">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="recordsList" class="records-list">
+                            <div class="empty-state small">暂无记录</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Toast 容器 -->
+        <div id="toastContainer" class="toast-container"></div>
+
+        <!-- 特征信息弹窗 -->
+        <div id="featureModal" class="modal" hidden>
+            <div class="modal-backdrop" onclick="closeFeatureModal()"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>特征提取方法</h3>
+                    <button class="btn btn-icon" onclick="closeFeatureModal()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div class="modal-body" id="featureModalBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
